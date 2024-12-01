@@ -31,18 +31,10 @@ main = do
     ["part1", filename] -> do
       putStrLn $ "Part1: " ++ filename
       input <- readFile filename
-
-      putStrLn "sum diffs"
       print $ locationDiffs input
-
-      putStrLn "done"
     ["part2", filename] -> do
       putStrLn $ "Part2: " ++ filename
       input <- readFile filename
-
       let similarityScore = uncurry similarityList $ locationLists input
-
       print similarityScore
-
-      putStrLn "done"
     _ -> putStrLn "One filename expected"
