@@ -12,5 +12,5 @@ Distance is 2 + 1 + 0 + 1 + 2 + 5 = 11
 Run with
 
 ```bash
-cabal run a01 -- input-test.txt
+cabal run a01 -- part1 input-test.txt
 ```
