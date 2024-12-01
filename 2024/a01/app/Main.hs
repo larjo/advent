@@ -1,19 +1,16 @@
 module Main where
 
+import Control.Arrow (Arrow ((***)))
 import Data.List (sort)
 import Data.Maybe (mapMaybe)
-import Control.Arrow
 import System.Environment (getArgs)
 
-ints :: String -> ([Int], [Int])
-ints =
+intLists :: String -> ([Int], [Int])
+intLists =
   unzip . mapMaybe (getPair . map read . words) . lines
   where
     getPair [a, b] = Just (a, b)
     getPair _ = Nothing
-
-sortBoth :: Ord a => ([a], [a]) -> ([a], [a])
-sortBoth = sort *** sort
 
 main :: IO ()
 main = do
@@ -22,7 +19,7 @@ main = do
     [filename] -> do
       putStrLn $ "Processing: " ++ filename
       input <- readFile filename
-      let (ints1, ints2) = sortBoth . ints $ input
+      let (ints1, ints2) = (sort *** sort) . intLists $ input
       putStrLn "First"
       mapM_ print ints1
 
