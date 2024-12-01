@@ -12,6 +12,9 @@ intLists =
     getPair [a, b] = Just (a, b)
     getPair _ = Nothing
 
+sumDiffs :: String -> Int
+sumDiffs = sum . map (abs . uncurry (-)) . uncurry zip . (sort *** sort) . intLists
+
 main :: IO ()
 main = do
   args <- getArgs
@@ -19,12 +22,9 @@ main = do
     [filename] -> do
       putStrLn $ "Processing: " ++ filename
       input <- readFile filename
-      let (ints1, ints2) = (sort *** sort) . intLists $ input
-      putStrLn "First"
-      mapM_ print ints1
 
-      putStrLn "Second"
-      mapM_ print ints2
+      putStrLn "sum diffs"
+      print $ sumDiffs input
 
       putStrLn "done"
     _ -> putStrLn "One filename expected"
