@@ -1,10 +1,7 @@
 module Main where
 
-pairs :: [a] -> [(a, a)]
-pairs = zip <*> tail
-
 diffs :: [Int] -> [Int]
-diffs = map (uncurry (-)) . pairs
+diffs = zipWith (-) <*> tail
 
 inRange :: Int -> Int -> [Int] -> Bool
 inRange a b = all (\x -> a <= x && x <= b)
