@@ -1,5 +1,6 @@
 module Main where
 
+import Data.List (inits, tails)
 import Control.Applicative (liftA2)
 
 diffs :: [Int] -> [Int]
@@ -15,8 +16,7 @@ allInRange :: [Int] -> Bool
 allInRange = (all (between 1 3) <||> all (between (-3) (-1))) . diffs
 
 removeOne :: [a] -> [[a]]
-removeOne [] = []
-removeOne (x : xs) = xs : map (x :) (removeOne xs)
+removeOne = liftA2 (zipWith (++)) inits (tail . tails)
 
 maxOneOutsideRange :: [Int] -> Bool
 maxOneOutsideRange ints =
