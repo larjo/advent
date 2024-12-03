@@ -5,13 +5,13 @@ import Control.Applicative (liftA2)
 diffs :: [Int] -> [Int]
 diffs = zipWith (-) <*> tail
 
-isOk :: [Int] -> Bool
-isOk = allBetween 1 3 <||> allBetween (-3) (-1)
+allInRange :: [Int] -> Bool
+allInRange = all (between 1 3) <||> all (between (-3) (-1))
   where
-    allBetween a b = all (\x -> a <= x && x <= b)
+    between a b x = a <= x && x <= b
     (<||>) = liftA2 (||)
 
 main :: IO ()
 main = do
   input <- readFile "input.txt"
-  print . length . filter isOk . map (diffs . map read . words) . lines $ input
+  print . length . filter allInRange . map (diffs . map read . words) . lines $ input
