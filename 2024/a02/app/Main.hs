@@ -17,7 +17,7 @@ removeOne :: [a] -> [[a]]
 removeOne = liftA2 (zipWith (++)) inits (tail . tails)
 
 maxOneOutsideRange :: [Int] -> Bool
-maxOneOutsideRange ints = any allInRange (removeOne ints)
+maxOneOutsideRange = any allInRange <$> removeOne
 
 main :: IO ()
 main = do
