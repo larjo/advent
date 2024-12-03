@@ -1,26 +1,23 @@
 module Main where
 
-import Data.List (inits, tails)
 import Control.Applicative (liftA2)
+import Data.List (inits, tails)
 
 diffs :: [Int] -> [Int]
 diffs = zipWith (-) <*> tail
 
-between :: (Ord a) => a -> a -> a -> Bool
-between a b x = a <= x && x <= b
-
-(<||>) :: (Applicative f) => (f a -> Bool) -> (f a -> Bool) -> f a -> Bool
-(<||>) = liftA2 (||)
-
 allInRange :: [Int] -> Bool
-allInRange = (all (between 1 3) <||> all (between (-3) (-1))) . diffs
+allInRange =
+  (all (between 1 3) <||> all (between (-3) (-1))) . diffs
+  where
+    between a b x = a <= x && x <= b
+    (<||>) = liftA2 (||)
 
 removeOne :: [a] -> [[a]]
 removeOne = liftA2 (zipWith (++)) inits (tail . tails)
 
 maxOneOutsideRange :: [Int] -> Bool
-maxOneOutsideRange ints =
-  allInRange ints || any allInRange (removeOne ints)
+maxOneOutsideRange ints = any allInRange (removeOne ints)
 
 main :: IO ()
 main = do
