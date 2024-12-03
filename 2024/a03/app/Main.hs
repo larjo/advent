@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Void (Void)
+import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
@@ -37,5 +37,5 @@ findAllOccurrences p = go 0
 main :: IO ()
 main = do
   input <- readFile "input.txt"
-  let s = parseMaybe (findAllOccurrences mulParser) input
-  mapM_ print s
+  putStr "Part 1: "
+  parseTest (findAllOccurrences mulParser) input
