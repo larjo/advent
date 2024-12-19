@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Functor.Identity (Identity)
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -25,6 +26,7 @@ mulParser = do
 findAllOccurrences :: Parser Int -> Parser Int
 findAllOccurrences p = go 0
   where
+    go :: Int -> ParsecT Void String Identity Int
     go acc = do
       end <- atEnd
       if end
@@ -35,23 +37,21 @@ findAllOccurrences p = go 0
             Just val -> go (val + acc)
             Nothing -> anySingle *> go acc
 
-test :: IO ()
-test = do
-  let inp = "mul(2,3)xmul(3,4)y"
-  let state0 = initialState "nofile" inp :: State String Void
-  let (state1, _res1) = runParser' mulParser state0
-  let state2 = state1 { stateInput = drop 1 (stateInput state1) }
-  let (state3, res3) = runParser' mulParser state2
-
-  putStrLn $ "state3: " ++ show state3
-  putStrLn $ "res3: " ++ show res3
-
-
--- manyMuls :: Parser [Int]
--- manyMuls = try mulParser <|> single alphaNumChar
+parseAll :: Parser Int -> Parser Int
+parseAll p = getParserState >>= go 0
+  where
+    go acc state =
+      case stateInput state of
+        [] -> return acc
+        _ -> do
+          let (nextState, res) = runParser' p state
+          case res of
+            Right val -> go (val + acc) nextState
+            Left _ -> go acc (state {stateInput = tail (stateInput state)})
 
 main :: IO ()
 main = do
   input <- readFile "input.txt"
   putStr "Part 1: "
+  parseTest (parseAll mulParser) input
   parseTest (findAllOccurrences mulParser) input
