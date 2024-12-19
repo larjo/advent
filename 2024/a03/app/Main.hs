@@ -26,7 +26,6 @@ mulParser = do
 findAllOccurrences :: Parser Int -> Parser Int
 findAllOccurrences p = go 0
   where
-    go :: Int -> ParsecT Void String Identity Int
     go acc = do
       end <- atEnd
       if end
@@ -43,8 +42,8 @@ parseAll p = getParserState >>= go 0
     go acc state =
       case stateInput state of
         [] -> return acc
-        _ -> do
-          let (nextState, res) = runParser' p state
+        _ ->
+          let (nextState, res) = runParser' p state in
           case res of
             Right val -> go (val + acc) nextState
             Left _ -> go acc (state {stateInput = tail (stateInput state)})
