@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Array (Array, array, (!))
+
 type CharArray = Array (Int, Int) Char
 
 mkCharArray :: [String] -> CharArray
@@ -10,11 +11,22 @@ mkCharArray l =
     xMax = length (head l) - 1
     yMax = length l - 1
 
+getRange :: CharArray -> Int -> Int -> Int -> Int -> Int -> String
+getRange ca count incX incY x y =
+  map (ca !) indices
+  where
+    indices = [(x + incX * n, y + incY * n) | n <- [0 .. count - 1]]
+
+checkXmas :: CharArray -> (Int, Int) -> Bool
+checkXmas ca (x, y) =
+  diag == "XMAS" || hor == "XMAS" || vert == "XMAS" || hor == "SAMX" || vert == "SAMX" || diag == "SAMX"
+  where
+    hor = getRange ca 4 1 0 x y
+    vert = getRange ca 4 1 0 x y
+    diag = getRange ca 4 1 1 x y
+
 main :: IO ()
 main = do
   input <- readFile "input.txt"
   let ca = mkCharArray $ lines input
-  print $ ca ! (0, 0)
-  print $ ca ! (9, 0)
-  print $ ca ! (0, 9)
-  print $ ca ! (9, 9)
+  print $ checkXmas ca (1, 2)
