@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Array (Array, array, (!))
+import Data.Array (Array, Ix (range), array, bounds, (!))
 
 type CharArray = Array (Int, Int) Char
 
@@ -11,22 +11,31 @@ mkCharArray l =
     xMax = length (head l) - 1
     yMax = length l - 1
 
-getRange :: CharArray -> Int -> Int -> Int -> Int -> Int -> String
-getRange ca count incX incY x y =
+inside :: CharArray -> (Int, Int) -> Bool
+inside ca (x, y) =
+  x >= xMin && x <= xMax && y >= yMin && y <= yMax
+  where
+    ((xMin, yMin), (xMax, yMax)) = bounds ca
+
+getRange :: CharArray -> Int -> (Int, Int) -> (Int, Int) -> String
+getRange ca len (dx, dy) (x, y) =
   map (ca !) indices
   where
-    indices = [(x + incX * n, y + incY * n) | n <- [0 .. count - 1]]
+    indices = filter (inside ca) [(x + dx * n, y + dy * n) | n <- [0 .. len - 1]]
 
-checkXmas :: CharArray -> (Int, Int) -> Bool
-checkXmas ca (x, y) =
-  diag == "XMAS" || hor == "XMAS" || vert == "XMAS" || hor == "SAMX" || vert == "SAMX" || diag == "SAMX"
+count :: String -> CharArray -> (Int, Int) -> Int
+count word ca (x, y) =
+  length $ filter checkrange deltas
   where
-    hor = getRange ca 4 1 0 x y
-    vert = getRange ca 4 1 0 x y
-    diag = getRange ca 4 1 1 x y
+    deltas = [(dx, dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1], dx /= 0 || dy /= 0]
+    checkrange d = getRange ca (length word) d (x, y) == word
+
+countAll :: String -> CharArray -> Int
+countAll word ca =
+  sum $ map (count word ca) (range (bounds ca))
 
 main :: IO ()
 main = do
   input <- readFile "input.txt"
-  let ca = mkCharArray $ lines input
-  print $ checkXmas ca (1, 2)
+  putStr "Part 1: "
+  print . countAll "XMAS" . mkCharArray . lines $ input
