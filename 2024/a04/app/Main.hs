@@ -32,7 +32,7 @@ count word ca (x, y) =
 
 countAll :: String -> CharArray -> Int
 countAll word ca =
-  sum $ map (count word ca) (range (bounds ca))
+  sum . map (count word ca) . range . bounds $ ca
 
 main :: IO ()
 main = do
