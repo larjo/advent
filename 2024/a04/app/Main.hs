@@ -31,12 +31,29 @@ countWords word ca (x, y) =
     checkWord delta = getWord ca (length word) delta (x, y) == word
     deltas = [(dx, dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1], dx /= 0 || dy /= 0]
 
-countAll :: String -> CharArray -> Int
-countAll word ca =
+countAllWords :: String -> CharArray -> Int
+countAllWords word ca =
   sum . map (countWords word ca) . range . bounds $ ca
+
+isXmas :: CharArray -> (Int, Int) -> Bool
+isXmas ca (x, y) =
+  checkMas (-1, -1) (1, 1) && checkMas (1, -1) (-1, 1)
+  where
+    checkMas startDelta delta =
+      word == "MAS" || word == "SAM"
+      where
+        word = getWord ca 3 delta ((x, y) `addDelta` startDelta)
+    addDelta (a, b) (c, d) = (a + c, b + d)
+
+countAllXMas :: CharArray -> Int
+countAllXMas ca =
+  sum . map (bool 0 1 . isXmas ca) . range . bounds $ ca
 
 main :: IO ()
 main = do
   input <- readFile "input.txt"
+  let ca = mkCharArray . lines $ input
   putStr "Part 1: "
-  print . countAll "XMAS" . mkCharArray . lines $ input
+  print . countAllWords "XMAS" $ ca
+  putStr "Part 2: "
+  print . countAllXMas $ ca
