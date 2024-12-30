@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Array (Array, Ix (range), array, bounds, (!))
+import Data.Bool (bool)
 
 type CharArray = Array (Int, Int) Char
 
@@ -17,22 +18,22 @@ inside ca (x, y) =
   where
     ((xMin, yMin), (xMax, yMax)) = bounds ca
 
-getRange :: CharArray -> Int -> (Int, Int) -> (Int, Int) -> String
-getRange ca len (dx, dy) (x, y) =
+getWord :: CharArray -> Int -> (Int, Int) -> (Int, Int) -> String
+getWord ca len (dx, dy) (x, y) =
   map (ca !) indices
   where
     indices = filter (inside ca) [(x + dx * n, y + dy * n) | n <- [0 .. len - 1]]
 
-count :: String -> CharArray -> (Int, Int) -> Int
-count word ca (x, y) =
-  length $ filter checkrange deltas
+countWords :: String -> CharArray -> (Int, Int) -> Int
+countWords word ca (x, y) =
+  sum . map (bool 0 1 . checkWord) $ deltas
   where
+    checkWord delta = getWord ca (length word) delta (x, y) == word
     deltas = [(dx, dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1], dx /= 0 || dy /= 0]
-    checkrange d = getRange ca (length word) d (x, y) == word
 
 countAll :: String -> CharArray -> Int
 countAll word ca =
-  sum . map (count word ca) . range . bounds $ ca
+  sum . map (countWords word ca) . range . bounds $ ca
 
 main :: IO ()
 main = do
