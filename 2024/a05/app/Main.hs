@@ -28,7 +28,12 @@ checkOrder orderings = checkPage
     checkPage [] = True
 
 mid :: [a] -> a
-mid xs = xs !! (length xs `div` 2)
+mid l = mid' l l
+  where
+    mid' (_ : xs) (_ : _ : cs) = mid' xs cs
+    mid' (x : _) [_] = x
+    mid' _ [] = error "Only odd lengths are supported"
+    mid' [] _ = error "Cannot happen"
 
 main :: IO ()
 main = do
