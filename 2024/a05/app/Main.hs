@@ -19,12 +19,13 @@ parseOrderings = map (split . splitOn "|")
 parseUpdates :: [String] -> [[Int]]
 parseUpdates = map (map read . splitOn ",")
 
+precedents :: [(Int, Int)] -> Int -> [Int]
+precedents orderings page = map fst . filter ((== page) . snd) $ orderings
+
 checkOrder :: [(Int, Int)] -> [Int] -> Bool
 checkOrder orderings = checkPage
   where
-    checkPage (h : t) = null (precedents `intersect` t) && checkPage t
-      where
-        precedents = map fst . filter ((== h) . snd) $ orderings
+    checkPage (page : pages) = null (precedents orderings page `intersect` pages) && checkPage pages
     checkPage [] = True
 
 mid :: [a] -> a
@@ -35,6 +36,23 @@ mid l = mid' l l
     mid' _ [] = error "Only odd lengths are supported"
     mid' [] _ = error "Cannot happen"
 
+pairs :: (a -> a -> b) -> [a] -> [b]
+pairs f xs = zipWith f xs (tail xs)
+
+fix :: (Eq t) => (t -> t) -> t -> t
+fix f x =
+  if x == x' then x else fix f x'
+  where
+    x' = f x
+
+swapUpdate :: (Eq a) => [(a, a)] -> [a] -> [a]
+swapUpdate orderings = swap
+  where
+    swap (a : b : xs)
+      | (b, a) `elem` orderings = b : a : xs
+      | otherwise = a : swap (b : xs)
+    swap xs = xs
+
 main :: IO ()
 main = do
   input <- readFile "input.txt"
@@ -44,3 +62,6 @@ main = do
 
   putStr "Part 1: "
   print $ sum . map mid . filter (checkOrder orderings) $ updates
+
+  putStr "Part 2: "
+  print $ sum . map (mid . fix (swapUpdate orderings)) . filter (not . checkOrder orderings) $ updates
