@@ -1,7 +1,7 @@
 module Main where
 
 import Data.Array (Array, Ix (range), array, bounds, (!))
-import Data.List (nub)
+import Data.List (nub, intersect, inits)
 import Data.VectorSpace ((^+^))
 
 type Index = (Int, Int)
@@ -11,7 +11,7 @@ data Vec = Vec
   { pos :: Index,
     dir :: Index
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 data Guard = Guard
   { vec :: Vec,
@@ -56,18 +56,19 @@ move labMap (Guard (Vec curPos curDir) curHist)
   where
     nextPos = curPos ^+^ curDir
 
-candidates :: CharArray -> Guard -> [Vec]
-candidates labMap (Guard (Vec curPos curDir) _curHist) =
+candidates :: CharArray -> Vec -> [Vec]
+candidates labMap (Vec curPos curDir) =
   map (`Vec` curDir) . takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
   where
     isCandidate p = not (outside labMap p) && (labMap ! p /= '#')
     candidateDir = rotate curDir
--- 
--- posibleObstruction :: CharArray -> Guard -> Bool
--- posibleObstruction labMap start =
---   where 
---     cs = candidates labMap start
 
+posibleObstruction :: CharArray -> [Vec] -> Int
+posibleObstruction labMap history =
+  length $ cs `intersect` history
+  where
+    startVec = head history
+    cs = candidates labMap startVec
 
 main :: IO ()
 main = do
@@ -76,8 +77,9 @@ main = do
   let start = guardStart '^' labMap
 
   putStr "Part 1: "
-  print $ length . nub . map pos . hist . fix (move labMap) $ start
+  let history = hist . fix (move labMap) $ start
+  print $ length . nub . map pos $ history
 
   putStr "Part 2: "
---   print $  hist . fix (move labMap) $ start
-  print $ candidates labMap start
+  print history
+  print $ map (posibleObstruction labMap) . tail . inits . reverse $ history
