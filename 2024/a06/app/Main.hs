@@ -1,17 +1,16 @@
 module Main where
 
 import Data.Array (Array, Ix (range), array, bounds, (!))
-import Data.Bool (bool)
 import Data.VectorSpace ((^+^))
-import Debug.Trace (traceShow)
+import Data.List (nub)
 
 type Index = (Int, Int)
-
 type CharArray = Array Index Char
 
 data Guard = Guard
   { pos :: Index
   , dir :: Index
+  , hist :: [Index]
   } deriving (Show)
 
 outside :: CharArray -> Index -> Bool
@@ -20,11 +19,11 @@ outside ca (x, y) =
   where
     ((xMin, yMin), (xMax, yMax)) = bounds ca
 
-fix :: (Guard -> Maybe Guard) -> Guard -> Int
+fix :: (Guard -> Guard) -> Guard -> Guard
 fix f x =
-  case f x of
-    Nothing -> 0
-    Just x' -> 1 + fix f x'
+    if dir x == (0, 0)
+    then x
+    else fix f (f x)
 
 rotate :: Index -> Index
 rotate (x, y) = (-y, x)
@@ -38,26 +37,25 @@ mkCharArray l =
 
 guardStart :: Char -> CharArray -> Guard
 guardStart c ca =
-  Guard startPos (0, -1)
+  Guard startPos (0, -1) [startPos]
   where
     startPos = head [i | i <- range (bounds ca), ca ! i == c]
 
-move :: CharArray -> Guard -> Maybe Guard
-move ca (Guard curPos curDir)
-  | outside ca nextPos = Nothing
-  | ca ! nextPos == '#' = Just $ Guard (curPos ^+^ rotate curDir) (rotate curDir)
-  | otherwise = Just $ Guard nextPos curDir
+move :: CharArray -> Guard -> Guard
+move ca (Guard curPos curDir curHist)
+  | outside ca nextPos = Guard curPos (0, 0) curHist
+  | ca ! nextPos == '#' = move ca $ Guard curPos (rotate curDir) curHist
+  | otherwise = Guard nextPos curDir (nextPos : curHist)
   where
-      nextPos = curPos ^+^ curDir
+    nextPos = curPos ^+^ curDir
 
-moveAll :: CharArray -> Guard -> Int
+moveAll :: CharArray -> Guard -> Guard
 moveAll ca = fix (move ca)
 
 main :: IO ()
 main = do
-  input <- readFile "test-input.txt"
+  input <- readFile "input.txt"
   let ca = mkCharArray . lines $ input
   let start = guardStart '^' ca
   putStr "Part 1 (expects 41) : "
-  print start
-  print $ moveAll ca start
+  print $ length . nub . hist $ moveAll ca start
