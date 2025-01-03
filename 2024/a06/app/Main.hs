@@ -16,10 +16,10 @@ data Guard = Guard
   deriving (Show)
 
 outside :: CharArray -> Index -> Bool
-outside ca (x, y) =
+outside labMap (x, y) =
   x < xMin || x > xMax || y < yMin || y > yMax
   where
-    ((xMin, yMin), (xMax, yMax)) = bounds ca
+    ((xMin, yMin), (xMax, yMax)) = bounds labMap
 
 fix :: (Guard -> Guard) -> Guard -> Guard
 fix f x =
@@ -38,23 +38,43 @@ mkCharArray l =
     yMax = length l - 1
 
 guardStart :: Char -> CharArray -> Guard
-guardStart c ca =
+guardStart c labMap =
   Guard startPos (0, -1) [startPos]
   where
-    startPos = head [i | i <- range (bounds ca), ca ! i == c]
+    startPos = head [i | i <- range (bounds labMap), labMap ! i == c]
 
 move :: CharArray -> Guard -> Guard
-move ca (Guard curPos curDir curHist)
-  | outside ca nextPos = Guard curPos (0, 0) curHist
-  | ca ! nextPos == '#' = move ca $ Guard curPos (rotate curDir) curHist
+move labMap (Guard curPos curDir curHist)
+  | outside labMap nextPos = Guard curPos (0, 0) curHist
+  | labMap ! nextPos == '#' = move labMap $ Guard curPos (rotate curDir) curHist
   | otherwise = Guard nextPos curDir (nextPos : curHist)
   where
     nextPos = curPos ^+^ curDir
+-- 
+-- posibleObstruction :: CharArray -> Guard -> Bool
+-- posibleObstruction labMap (Guard curPos curDir curHist) =
+--   where
+--     candidateDir = rotate curDir
+--     candidates = takeWhile (not . outside labMap) . iterate (^+^ candidateDir) $ curPos
+-- 
+--     filter () curHist
+
+candidates :: CharArray -> Guard -> [Index]
+candidates labMap (Guard curPos curDir _curHist) =
+  takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
+  where
+    isCandidate p = not (outside labMap p) && (labMap ! p /= '#')
+    candidateDir = rotate curDir
 
 main :: IO ()
 main = do
-  input <- readFile "input.txt"
-  let ca = mkCharArray . lines $ input
-  let start = guardStart '^' ca
-  putStr "Part 1 : "
-  print $ length . nub . hist . fix (move ca) $ start
+  input <- readFile "test-input.txt"
+  let labMap = mkCharArray . lines $ input
+  let start = guardStart '^' labMap
+
+  putStr "Part 1: "
+  print $ length . nub . hist . fix (move labMap) $ start
+
+  putStr "Part 2: "
+  print $ candidates labMap start
+  print $ candidates labMap (start {dir = (0, 1)})
