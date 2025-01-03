@@ -49,13 +49,10 @@ move ca (Guard curPos curDir curHist)
   where
     nextPos = curPos ^+^ curDir
 
-moveAll :: CharArray -> Guard -> Guard
-moveAll ca = fix (move ca)
-
 main :: IO ()
 main = do
   input <- readFile "input.txt"
   let ca = mkCharArray . lines $ input
   let start = guardStart '^' ca
-  putStr "Part 1 (expects 41) : "
-  print $ length . nub . hist $ moveAll ca start
+  putStr "Part 1 : "
+  print $ length . nub . hist . fix (move ca) $ start
