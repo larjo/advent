@@ -7,11 +7,15 @@ import Data.VectorSpace ((^+^))
 type Index = (Int, Int)
 
 type CharArray = Array Index Char
+data Vec = Vec
+  { pos :: Index,
+    dir :: Index
+  }
+  deriving (Show)
 
 data Guard = Guard
-  { pos :: Index,
-    dir :: Index,
-    hist :: [Index]
+  { vec :: Vec,
+    hist :: [Vec]
   }
   deriving (Show)
 
@@ -23,7 +27,7 @@ outside labMap (x, y) =
 
 fix :: (Guard -> Guard) -> Guard -> Guard
 fix f x =
-  if dir x == (0, 0)
+  if (dir . vec $ x) == (0, 0)
     then x
     else fix f (f x)
 
@@ -39,32 +43,31 @@ mkCharArray l =
 
 guardStart :: Char -> CharArray -> Guard
 guardStart c labMap =
-  Guard startPos (0, -1) [startPos]
+  Guard startVec [startVec]
   where
     startPos = head [i | i <- range (bounds labMap), labMap ! i == c]
+    startVec = Vec startPos (0, -1)
 
 move :: CharArray -> Guard -> Guard
-move labMap (Guard curPos curDir curHist)
-  | outside labMap nextPos = Guard curPos (0, 0) curHist
-  | labMap ! nextPos == '#' = move labMap $ Guard curPos (rotate curDir) curHist
-  | otherwise = Guard nextPos curDir (nextPos : curHist)
+move labMap (Guard (Vec curPos curDir) curHist)
+  | outside labMap nextPos = Guard (Vec curPos (0, 0)) curHist
+  | labMap ! nextPos == '#' = move labMap $ Guard (Vec curPos (rotate curDir)) curHist
+  | otherwise = Guard (Vec nextPos curDir) (Vec nextPos curDir : curHist)
   where
     nextPos = curPos ^+^ curDir
--- 
--- posibleObstruction :: CharArray -> Guard -> Bool
--- posibleObstruction labMap (Guard curPos curDir curHist) =
---   where
---     candidateDir = rotate curDir
---     candidates = takeWhile (not . outside labMap) . iterate (^+^ candidateDir) $ curPos
--- 
---     filter () curHist
 
-candidates :: CharArray -> Guard -> [Index]
-candidates labMap (Guard curPos curDir _curHist) =
-  takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
+candidates :: CharArray -> Guard -> [Vec]
+candidates labMap (Guard (Vec curPos curDir) _curHist) =
+  map (`Vec` curDir) . takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
   where
     isCandidate p = not (outside labMap p) && (labMap ! p /= '#')
     candidateDir = rotate curDir
+-- 
+-- posibleObstruction :: CharArray -> Guard -> Bool
+-- posibleObstruction labMap start =
+--   where 
+--     cs = candidates labMap start
+
 
 main :: IO ()
 main = do
@@ -73,8 +76,8 @@ main = do
   let start = guardStart '^' labMap
 
   putStr "Part 1: "
-  print $ length . nub . hist . fix (move labMap) $ start
+  print $ length . nub . map pos . hist . fix (move labMap) $ start
 
   putStr "Part 2: "
+--   print $  hist . fix (move labMap) $ start
   print $ candidates labMap start
-  print $ candidates labMap (start {dir = (0, 1)})
