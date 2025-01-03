@@ -1,17 +1,19 @@
 module Main where
 
 import Data.Array (Array, Ix (range), array, bounds, (!))
-import Data.VectorSpace ((^+^))
 import Data.List (nub)
+import Data.VectorSpace ((^+^))
 
 type Index = (Int, Int)
+
 type CharArray = Array Index Char
 
 data Guard = Guard
-  { pos :: Index
-  , dir :: Index
-  , hist :: [Index]
-  } deriving (Show)
+  { pos :: Index,
+    dir :: Index,
+    hist :: [Index]
+  }
+  deriving (Show)
 
 outside :: CharArray -> Index -> Bool
 outside ca (x, y) =
@@ -21,7 +23,7 @@ outside ca (x, y) =
 
 fix :: (Guard -> Guard) -> Guard -> Guard
 fix f x =
-    if dir x == (0, 0)
+  if dir x == (0, 0)
     then x
     else fix f (f x)
 
