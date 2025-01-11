@@ -60,12 +60,12 @@ forward :: Vec -> Vec
 forward (Vec curPos curDir) = Vec (curPos ^+^ curDir) curDir
 
 move :: CharArray -> Guard -> Guard
-move labMap (Guard v curHist)
-  | outside labMap nextVec = Guard (v { dir = (0, 0) }) curHist
-  | charAt labMap nextVec == '#' = move labMap $ Guard (rotate v) curHist
+move labMap (Guard curVec curHist)
+  | outside labMap nextVec = Guard (curVec { dir = (0, 0) }) curHist
+  | charAt labMap nextVec == '#' = move labMap $ Guard (rotate curVec) curHist
   | otherwise = Guard nextVec (nextVec : curHist)
   where
-    nextVec = forward v
+    nextVec = forward curVec
 
 candidates :: CharArray -> Vec -> [Vec]
 candidates labMap =
