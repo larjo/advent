@@ -88,14 +88,14 @@ test = do
 
 main :: IO ()
 main = do
-  input <- readFile "test-input.txt"
+  input <- readFile "input.txt"
   let labMap = mkCharArray . lines $ input
   let start = guardStart '^' labMap
 
   putStr "Part 1: "
-  let history = hist . fix (move labMap) $ start
+  let history = reverse . hist . fix (move labMap) $ start
   print $ length . nub . map pos $ history
 
   putStr "Part 2: "
-  print $ length . filter (possibleObstruction labMap . reverse) . tail . inits . reverse $ history
+  print $ length . filter (possibleObstruction labMap . reverse) . tail . inits $ history
   -- 503 is too low
