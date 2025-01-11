@@ -3,6 +3,7 @@ module Main where
 import Data.Array (Array, Ix (range), array, bounds, (!))
 import Data.List (nub, intersect, inits)
 import Data.VectorSpace ((^+^))
+import Debug.Trace (traceShow)
 
 type Index = (Int, Int)
 
@@ -63,12 +64,25 @@ candidates labMap (Vec curPos curDir) =
     isCandidate p = not (outside labMap p) && (labMap ! p /= '#')
     candidateDir = rotate curDir
 
-posibleObstruction :: CharArray -> [Vec] -> Int
-posibleObstruction labMap history =
-  length $ cs `intersect` history
+possibleObstruction :: CharArray -> [Vec] -> Bool
+possibleObstruction labMap partHistory =
+  ok && traceShow startVec True
   where
-    startVec = head history
+    startVec = last partHistory
     cs = candidates labMap startVec
+    ok = not . null $ cs `intersect` partHistory
+
+test :: IO ()
+test = do
+  input <- readFile "test-input.txt"
+  let labMap = mkCharArray . lines $ input
+  let partHistory = [Vec {pos = (4,6), dir = (0,-1)},Vec {pos = (4,5), dir = (0,-1)},Vec {pos = (4,4), dir = (0,-1)},Vec {pos = (4,3), dir = (0,-1)},Vec {pos = (4,2), dir = (0,-1)},Vec {pos = (4,1), dir = (0,-1)},Vec {pos = (5,1), dir = (1,0)},Vec {pos = (6,1), dir = (1,0)},Vec {pos = (7,1), dir = (1,0)},Vec {pos = (8,1), dir = (1,0)},Vec {pos = (8,2), dir = (0,1)},Vec {pos = (8,3), dir = (0,1)},Vec {pos = (8,4), dir = (0,1)},Vec {pos = (8,5), dir = (0,1)},Vec {pos = (8,6), dir = (0,1)},Vec {pos = (7,6), dir = (-1,0)},Vec {pos = (6,6), dir = (-1,0)},Vec {pos = (5,6), dir = (-1,0)},Vec {pos = (4,6), dir = (-1,0)},Vec {pos = (3,6), dir = (-1,0)},Vec {pos = (2,6), dir = (-1,0)},Vec {pos = (2,5), dir = (0,-1)}]
+  let startVec = last partHistory
+  let cs = candidates labMap startVec
+  let ok = not . null $ cs `intersect` partHistory
+  print startVec
+  print cs
+  print ok
 
 main :: IO ()
 main = do
@@ -80,6 +94,9 @@ main = do
   let history = hist . fix (move labMap) $ start
   print $ length . nub . map pos $ history
 
+  putStrLn "xxxxxxxxxxx"
+  print $ tail . tail . inits . reverse $ history
+  putStrLn "xxxxxxxxxxx"
+  print $ inits . reverse $ history
   putStr "Part 2: "
-  print history
-  print $ map (posibleObstruction labMap) . tail . inits . reverse $ history
+  print $ length . filter (possibleObstruction labMap) . tail . tail . inits . reverse $ history
