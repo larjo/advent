@@ -4,6 +4,7 @@ import Data.Array (Array, Ix (range), array, bounds, (!))
 import Data.List (nub, intersect, inits)
 import Data.VectorSpace ((^+^))
 import Debug.Trace (traceShow)
+import Text.ParserCombinators.ReadP (char)
 
 type Index = (Int, Int)
 
@@ -20,8 +21,11 @@ data Guard = Guard
   }
   deriving (Show)
 
-outside :: CharArray -> Index -> Bool
-outside labMap (x, y) =
+charAt :: CharArray -> Vec -> Char
+charAt labMap (Vec p _) = labMap ! p
+
+outside :: CharArray -> Vec -> Bool
+outside labMap (Vec (x, y) _) =
   x < xMin || x > xMax || y < yMin || y > yMax
   where
     ((xMin, yMin), (xMax, yMax)) = bounds labMap
@@ -32,8 +36,11 @@ fix f x =
     then x
     else fix f (f x)
 
-rotate :: Index -> Index
-rotate (x, y) = (-y, x)
+rotateIndex :: Index -> Index
+rotateIndex (x, y) = (-y, x)
+
+rotate :: Vec -> Vec
+rotate v = v { dir = rotateIndex (dir v) }
 
 mkCharArray :: [String] -> CharArray
 mkCharArray l =
@@ -49,27 +56,26 @@ guardStart c labMap =
     startPos = head [i | i <- range (bounds labMap), labMap ! i == c]
     startVec = Vec startPos (0, -1)
 
+forward :: Vec -> Vec
+forward (Vec curPos curDir) = Vec (curPos ^+^ curDir) curDir
+
 move :: CharArray -> Guard -> Guard
-move labMap (Guard (Vec curPos curDir) curHist)
-  | outside labMap nextPos = Guard (Vec curPos (0, 0)) curHist
-  | labMap ! nextPos == '#' = move labMap $ Guard (Vec curPos (rotate curDir)) curHist
-  | otherwise = Guard (Vec nextPos curDir) (Vec nextPos curDir : curHist)
+move labMap (Guard v curHist)
+  | outside labMap nextVec = Guard (v { dir = (0, 0) }) curHist
+  | charAt labMap nextVec == '#' = move labMap $ Guard (rotate v) curHist
+  | otherwise = Guard nextVec (nextVec : curHist)
   where
-    nextPos = curPos ^+^ curDir
+    nextVec = forward v
 
 candidates :: CharArray -> Vec -> [Vec]
-candidates labMap (Vec curPos curDir) =
-  map (`Vec` candidateDir) . takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
+candidates labMap =
+  takeWhile isCandidate . drop 1 . iterate forward . rotate
   where
-    isCandidate p = not (outside labMap p) && (labMap ! p /= '#')
-    candidateDir = rotate curDir
-
-forward :: Vec -> Vec
-forward (Vec (x, y) (dx, dy)) = Vec (x + dx, y + dy) (dx, dy)
+    isCandidate v = not (outside labMap v) && (charAt labMap v /= '#')
 
 possibleObstruction :: CharArray -> [Vec] -> Bool
 possibleObstruction labMap partHistory =
-  (not . null $ cs `intersect` partHistory) && traceShow (forward startVec) True
+  not . null $ cs `intersect` partHistory -- && traceShow (forward startVec) True
   where
     startVec = head partHistory
     cs = candidates labMap startVec
