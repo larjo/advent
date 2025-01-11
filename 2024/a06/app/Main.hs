@@ -59,18 +59,20 @@ move labMap (Guard (Vec curPos curDir) curHist)
 
 candidates :: CharArray -> Vec -> [Vec]
 candidates labMap (Vec curPos curDir) =
-  map (`Vec` curDir) . takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
+  map (`Vec` candidateDir) . takeWhile isCandidate . drop 1 . iterate (^+^ candidateDir) $ curPos
   where
     isCandidate p = not (outside labMap p) && (labMap ! p /= '#')
     candidateDir = rotate curDir
 
+forward :: Vec -> Vec
+forward (Vec (x, y) (dx, dy)) = Vec (x + dx, y + dy) (dx, dy)
+
 possibleObstruction :: CharArray -> [Vec] -> Bool
 possibleObstruction labMap partHistory =
-  ok && traceShow startVec True
+  (not . null $ cs `intersect` partHistory) && traceShow (forward startVec) True
   where
     startVec = last partHistory
     cs = candidates labMap startVec
-    ok = not . null $ cs `intersect` partHistory
 
 test :: IO ()
 test = do
@@ -94,9 +96,5 @@ main = do
   let history = hist . fix (move labMap) $ start
   print $ length . nub . map pos $ history
 
-  putStrLn "xxxxxxxxxxx"
-  print $ tail . tail . inits . reverse $ history
-  putStrLn "xxxxxxxxxxx"
-  print $ inits . reverse $ history
   putStr "Part 2: "
   print $ length . filter (possibleObstruction labMap) . tail . tail . inits . reverse $ history
