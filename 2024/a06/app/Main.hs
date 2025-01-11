@@ -1,10 +1,9 @@
 module Main where
 
 import Data.Array (Array, Ix (range), array, bounds, (!))
-import Data.List (nub, intersect, inits)
+import Data.List (nub, intersect)
 import Data.VectorSpace ((^+^))
 import Debug.Trace (traceShow)
-import Text.ParserCombinators.ReadP (char)
 
 type Index = (Int, Int)
 
@@ -14,12 +13,6 @@ data Vec = Vec
     dir :: Index
   }
   deriving (Show, Eq)
-
-data Guard = Guard
-  { vec :: Vec,
-    hist :: [Vec]
-  }
-  deriving (Show)
 
 charAt :: CharArray -> Vec -> Char
 charAt labMap (Vec p _) = labMap ! p
@@ -56,16 +49,26 @@ startVec c labMap =
 forward :: Vec -> Vec
 forward (Vec curPos curDir) = Vec (curPos ^+^ curDir) curDir
 
-move :: CharArray -> Vec -> Vec
+move :: CharArray -> Vec -> Maybe Vec
 move labMap curVec
-  | outside labMap nextVec = curVec { dir = (0, 0) }
+  | outside labMap nextVec = Nothing
   | charAt labMap nextVec == '#' = move labMap . rotate $ curVec
-  | otherwise = nextVec
+  | otherwise = Just nextVec
   where
     nextVec = forward curVec
 
+iterateMaybe :: (a -> Maybe a) -> a -> [a]
+iterateMaybe f x =
+  x : go (f x)
+  where
+    go (Just y) = iterateMaybe f y
+    go Nothing = []
+
 candidates :: CharArray -> Vec -> [Vec]
-candidates labMap = drop 1 . iterate (move labMap) . rotate
+candidates labMap = drop 1 . iterateMaybe (move labMap) . rotate
+
+isLoop :: CharArray -> Vec -> Bool
+isLoop labMap start = start `elem` candidates labMap start
 
 possibleObstruction :: CharArray -> [Vec] -> Bool
 possibleObstruction labMap partHistory =
@@ -90,11 +93,14 @@ main :: IO ()
 main = do
   input <- readFile "input.txt"
   let labMap = mkCharArray . lines $ input
-  let path = takeWhile (not . stopped) . iterate (move labMap)
   let start = startVec '^' labMap
-
+  let path = iterateMaybe (move labMap) start
   putStr "Part 1: "
-  print $ length . nub . map pos . path $ start
+  print $ length . nub . map pos $ path
+
+  let c = length $ filter (isLoop labMap) path
+  putStrLn "Candidates"
+  print c
 -- 
 --   putStr "Part 2: "
 --   print $ length . filter (possibleObstruction labMap . reverse) . tail . inits $ history
