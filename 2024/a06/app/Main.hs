@@ -71,7 +71,7 @@ possibleObstruction :: CharArray -> [Vec] -> Bool
 possibleObstruction labMap partHistory =
   (not . null $ cs `intersect` partHistory) && traceShow (forward startVec) True
   where
-    startVec = last partHistory
+    startVec = head partHistory
     cs = candidates labMap startVec
 
 test :: IO ()
@@ -79,7 +79,7 @@ test = do
   input <- readFile "test-input.txt"
   let labMap = mkCharArray . lines $ input
   let partHistory = [Vec {pos = (4,6), dir = (0,-1)},Vec {pos = (4,5), dir = (0,-1)},Vec {pos = (4,4), dir = (0,-1)},Vec {pos = (4,3), dir = (0,-1)},Vec {pos = (4,2), dir = (0,-1)},Vec {pos = (4,1), dir = (0,-1)},Vec {pos = (5,1), dir = (1,0)},Vec {pos = (6,1), dir = (1,0)},Vec {pos = (7,1), dir = (1,0)},Vec {pos = (8,1), dir = (1,0)},Vec {pos = (8,2), dir = (0,1)},Vec {pos = (8,3), dir = (0,1)},Vec {pos = (8,4), dir = (0,1)},Vec {pos = (8,5), dir = (0,1)},Vec {pos = (8,6), dir = (0,1)},Vec {pos = (7,6), dir = (-1,0)},Vec {pos = (6,6), dir = (-1,0)},Vec {pos = (5,6), dir = (-1,0)},Vec {pos = (4,6), dir = (-1,0)},Vec {pos = (3,6), dir = (-1,0)},Vec {pos = (2,6), dir = (-1,0)},Vec {pos = (2,5), dir = (0,-1)}]
-  let startVec = last partHistory
+  let startVec = head partHistory
   let cs = candidates labMap startVec
   let ok = not . null $ cs `intersect` partHistory
   print startVec
@@ -88,7 +88,7 @@ test = do
 
 main :: IO ()
 main = do
-  input <- readFile "test-input.txt"
+  input <- readFile "input.txt"
   let labMap = mkCharArray . lines $ input
   let start = guardStart '^' labMap
 
@@ -97,4 +97,5 @@ main = do
   print $ length . nub . map pos $ history
 
   putStr "Part 2: "
-  print $ length . filter (possibleObstruction labMap) . tail . tail . inits . reverse $ history
+  print $ length . filter (possibleObstruction labMap . reverse) . tail . tail . inits . reverse $ history
+  -- 503 is too low
