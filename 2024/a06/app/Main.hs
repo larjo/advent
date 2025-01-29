@@ -1,9 +1,8 @@
 module Main where
 
-import Data.Array (Array, Ix (range), array, bounds, (!))
-import Data.List (nub, intersect)
+import Data.Array (Array, Ix (range), array, bounds, (!), (//))
+import Data.List (nub)
 import Data.VectorSpace ((^+^))
-import Debug.Trace (traceShow)
 
 type Index = (Int, Int)
 
@@ -52,7 +51,7 @@ forward (Vec curPos curDir) = Vec (curPos ^+^ curDir) curDir
 move :: CharArray -> Vec -> Maybe Vec
 move labMap curVec
   | outside labMap nextVec = Nothing
-  | charAt labMap nextVec == '#' = move labMap . rotate $ curVec
+  | charAt labMap nextVec == '#' = Just . rotate $ curVec
   | otherwise = Just nextVec
   where
     nextVec = forward curVec
@@ -64,30 +63,19 @@ iterateMaybe f x =
     go (Just y) = iterateMaybe f y
     go Nothing = []
 
-candidates :: CharArray -> Vec -> [Vec]
-candidates labMap = drop 1 . iterateMaybe (move labMap) . rotate
+checkLoop :: Eq a => [a] -> [a] -> Bool
+checkLoop _ [] = False
+checkLoop seen (x : xs)
+    | x `elem` seen = True
+    | otherwise = checkLoop (x : seen) xs
 
-isLoop :: CharArray -> Vec -> Bool
-isLoop labMap start = start `elem` candidates labMap start
-
-possibleObstruction :: CharArray -> [Vec] -> Bool
-possibleObstruction labMap partHistory =
-  not . null $ cs `intersect` partHistory -- && traceShow (forward startVec) True
+isLoop :: CharArray -> Vec -> Vec -> Bool
+isLoop labMap start curr =
+    allowed && checkLoop [] candidates
   where
-    start = head partHistory
-    cs = candidates labMap start
-
-test :: IO ()
-test = do
-  input <- readFile "test-input.txt"
-  let labMap = mkCharArray . lines $ input
-  let partHistory = [Vec {pos = (4,6), dir = (0,-1)},Vec {pos = (4,5), dir = (0,-1)},Vec {pos = (4,4), dir = (0,-1)},Vec {pos = (4,3), dir = (0,-1)},Vec {pos = (4,2), dir = (0,-1)},Vec {pos = (4,1), dir = (0,-1)},Vec {pos = (5,1), dir = (1,0)},Vec {pos = (6,1), dir = (1,0)},Vec {pos = (7,1), dir = (1,0)},Vec {pos = (8,1), dir = (1,0)},Vec {pos = (8,2), dir = (0,1)},Vec {pos = (8,3), dir = (0,1)},Vec {pos = (8,4), dir = (0,1)},Vec {pos = (8,5), dir = (0,1)},Vec {pos = (8,6), dir = (0,1)},Vec {pos = (7,6), dir = (-1,0)},Vec {pos = (6,6), dir = (-1,0)},Vec {pos = (5,6), dir = (-1,0)},Vec {pos = (4,6), dir = (-1,0)},Vec {pos = (3,6), dir = (-1,0)},Vec {pos = (2,6), dir = (-1,0)},Vec {pos = (2,5), dir = (0,-1)}]
-  let start = head partHistory
-  let cs = candidates labMap start
-  let ok = not . null $ cs `intersect` partHistory
-  print start
-  print cs
-  print ok
+    candidates = iterateMaybe (move labMap') start
+    labMap' = labMap // [(pos curr, '#')]
+    allowed = charAt labMap curr /= '^'
 
 main :: IO ()
 main = do
@@ -96,12 +84,8 @@ main = do
   let start = startVec '^' labMap
   let path = iterateMaybe (move labMap) start
   putStr "Part 1: "
-  print $ length . nub . map pos $ path
-
-  let c = length $ filter (isLoop labMap) path
+  print . length . nub . map pos $ path
+  
+  let obs = nub . map pos . filter (isLoop labMap start) $ path
   putStrLn "Candidates"
-  print c
--- 
---   putStr "Part 2: "
---   print $ length . filter (possibleObstruction labMap . reverse) . tail . inits $ history
-  -- 503 is too low
+  print $ length obs
