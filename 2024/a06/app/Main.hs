@@ -79,9 +79,9 @@ main = do
   let labMap = mkCharArray . lines $ input
   let start = findStart '^' labMap
   let path = iterateMaybe (move labMap) start
+
   putStr "Part 1: "
   print . length . nub . map pos $ path
   
-  let obs = nub . map pos . filter (isLoop labMap start) $ path
-  putStrLn "Candidates"
-  print $ length obs
+  putStr "Part 2: "
+  print . length . nub . map pos . filter (isLoop labMap start) $ path
