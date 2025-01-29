@@ -16,10 +16,6 @@ data Vec = Vec
 charAt :: CharArray -> Vec -> Char
 charAt labMap (Vec p _) = labMap ! p
 
-stopped :: Vec -> Bool
-stopped (Vec _ (0, 0)) = True
-stopped _ = False
-
 outside :: CharArray -> Vec -> Bool
 outside labMap (Vec (x, y) _) =
   x < xMin || x > xMax || y < yMin || y > yMax
@@ -39,8 +35,8 @@ mkCharArray l =
     xMax = length (head l) - 1
     yMax = length l - 1
 
-startVec :: Char -> CharArray -> Vec
-startVec c labMap =
+findStart :: Char -> CharArray -> Vec
+findStart c labMap =
   Vec startPos (0, -1)
   where
     startPos = head [i | i <- range (bounds labMap), labMap ! i == c]
@@ -81,7 +77,7 @@ main :: IO ()
 main = do
   input <- readFile "input.txt"
   let labMap = mkCharArray . lines $ input
-  let start = startVec '^' labMap
+  let start = findStart '^' labMap
   let path = iterateMaybe (move labMap) start
   putStr "Part 1: "
   print . length . nub . map pos $ path
