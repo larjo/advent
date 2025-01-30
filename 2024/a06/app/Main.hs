@@ -59,15 +59,19 @@ iterateMaybe f x =
     go (Just y) = iterateMaybe f y
     go Nothing = []
 
-checkLoop :: Eq a => [a] -> [a] -> Bool
-checkLoop _ [] = False
-checkLoop seen (x : xs)
-    | x `elem` seen = True
-    | otherwise = checkLoop (x : seen) xs
+checkLoop :: Eq a => [a] -> Bool
+checkLoop [] = False
+checkLoop path@(_ : xs) =
+    checkLoop' False path xs
+  where
+    checkLoop' _ _ [] = False
+    checkLoop' _ [] _ = False -- Should never happen
+    checkLoop' False slows@(slow : _) (fast : fasts) = (fast == slow) || checkLoop' True slows fasts
+    checkLoop' True (slow : slows) (fast : fasts) = (fast == slow) || checkLoop' False slows fasts
 
 isLoop :: CharArray -> Vec -> Vec -> Bool
 isLoop labMap start curr =
-    allowed && checkLoop [] candidates
+    allowed && checkLoop candidates
   where
     candidates = iterateMaybe (move labMap') start
     labMap' = labMap // [(pos curr, '#')]
@@ -82,6 +86,6 @@ main = do
 
   putStr "Part 1: "
   print . length . nub . map pos $ path
-  
+
   putStr "Part 2: "
   print . length . nub . map pos . filter (isLoop labMap start) $ path
