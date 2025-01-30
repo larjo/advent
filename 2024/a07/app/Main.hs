@@ -1,8 +1,8 @@
 module Main where
 
 import Data.Void ( Void )
-import Text.Megaparsec
-import Text.Megaparsec.Char
+import Text.Megaparsec ( parse, errorBundlePretty, many, sepBy, Parsec )
+import Text.Megaparsec.Char ( string, char, eol )
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void String
