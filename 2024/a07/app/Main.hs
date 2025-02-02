@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Applicative (liftA)
 import Data.Either (fromRight)
 import Data.List (find)
 import Data.Maybe (mapMaybe)
@@ -25,20 +26,33 @@ equationParser = Equation <$> L.decimal <* string ": " <*> numberListParser
 inputParser :: Parser [Equation]
 inputParser = many (equationParser <* eol)
 
-calc1 :: Int -> [Int] -> [Int]
-calc1 n acc = [op a n | a <- acc, op <- [(*), (+)]]
+type Op = Int -> Int -> Int
 
-calcs :: [Int] -> [Int]
-calcs [] = []
-calcs (a : ns) = foldr calc1 [a] . reverse $ ns
+conc :: Op
+conc a b =
+  read $ strA ++ strB
+  where
+    strA = show a
+    strB = show b
 
-testEq :: Equation -> Maybe Int
-testEq eq = find (== result eq) . calcs . numbers $ eq
+calc1 :: [Op] -> Int -> [Int] -> [Int]
+calc1 ops n acc = [a `op` n | a <- acc, op <- ops]
+
+calcs :: [Op] -> [Int] -> [Int]
+calcs _ [] = []
+calcs ops (a : ns) = foldr (calc1 ops) [a] . reverse $ ns
+
+testEq :: [Op] -> Equation -> Maybe Int
+testEq ops eq = find (== result eq) . calcs ops . numbers $ eq
 
 main :: IO ()
 main = do
   input <- readFile "input.txt"
   let res = parse inputParser "" input
   let eqs = fromRight [] res
+
   putStr "Part 1: "
-  print $ sum . mapMaybe testEq $ eqs
+  print $ sum . mapMaybe (testEq [(*), (+)]) $ eqs
+
+  putStr "Part 2: "
+  print $ sum . mapMaybe (testEq [(*), (+), conc]) $ eqs
