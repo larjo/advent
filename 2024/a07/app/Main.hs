@@ -1,6 +1,5 @@
 module Main where
 
-import Control.Applicative (liftA)
 import Data.Either (fromRight)
 import Data.List (find)
 import Data.Maybe (mapMaybe)
