@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Either (fromRight)
+import Data.Function (on)
 import Data.List (find)
 import Data.Maybe (mapMaybe)
 import Data.Void (Void)
@@ -27,12 +28,10 @@ inputParser = many (equationParser <* eol)
 
 type Op = Int -> Int -> Int
 
-conc :: Op
-conc a b =
-  read $ strA ++ strB
+(|||) :: Op
+(|||) a b = read $ a +++ b
   where
-    strA = show a
-    strB = show b
+    (+++) = (++) `on` show
 
 calc1 :: [Op] -> Int -> [Int] -> [Int]
 calc1 ops n acc = [a `op` n | a <- acc, op <- ops]
@@ -54,4 +53,4 @@ main = do
   print $ sum . mapMaybe (testEq [(*), (+)]) $ eqs
 
   putStr "Part 2: "
-  print $ sum . mapMaybe (testEq [(*), (+), conc]) $ eqs
+  print $ sum . mapMaybe (testEq [(*), (+), (|||)]) $ eqs
