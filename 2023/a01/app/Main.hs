@@ -1,8 +1,8 @@
 module Main where
 
+import Data.Maybe (mapMaybe)
 import MyLib (extract)
 import System.IO
-import Data.Maybe (mapMaybe)
 
 main :: IO ()
 main = do

@@ -53,15 +53,15 @@ extractNumbers =
     . snd
     . foldl
       ( \((wasTouched, current), numbers) (isTouched, chr) ->
-          let nextWasTouched = isTouched || wasTouched in
-          if isDigit chr
-          then
-            let nextNumber = 10 * current + digitToInt chr in
-            ((nextWasTouched, nextNumber), numbers)
-          else
-            if current > 0 && wasTouched
-              then ((False, 0), current : numbers)
-              else ((False, 0), numbers)
+          let nextWasTouched = isTouched || wasTouched
+           in if isDigit chr
+                then
+                  let nextNumber = 10 * current + digitToInt chr
+                   in ((nextWasTouched, nextNumber), numbers)
+                else
+                  if current > 0 && wasTouched
+                    then ((False, 0), current : numbers)
+                    else ((False, 0), numbers)
       )
       ((False, 0), [])
 

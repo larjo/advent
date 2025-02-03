@@ -7,6 +7,7 @@ import Data.VectorSpace ((^+^))
 type Index = (Int, Int)
 
 type CharArray = Array Index Char
+
 data Vec = Vec
   { pos :: Index,
     dir :: Index
@@ -26,7 +27,7 @@ rotateIndex :: Index -> Index
 rotateIndex (x, y) = (-y, x)
 
 rotate :: Vec -> Vec
-rotate v = v { dir = rotateIndex (dir v) }
+rotate v = v {dir = rotateIndex (dir v)}
 
 mkCharArray :: [String] -> CharArray
 mkCharArray l =
@@ -59,10 +60,10 @@ iterateMaybe f x =
     go (Just y) = iterateMaybe f y
     go Nothing = []
 
-checkLoop :: Eq a => [a] -> Bool
+checkLoop :: (Eq a) => [a] -> Bool
 checkLoop [] = False
 checkLoop path@(_ : xs) =
-    checkLoop' False path xs
+  checkLoop' False path xs
   where
     checkLoop' _ _ [] = False
     checkLoop' _ [] _ = False -- Should never happen
@@ -71,7 +72,7 @@ checkLoop path@(_ : xs) =
 
 isLoop :: CharArray -> Vec -> Vec -> Bool
 isLoop labMap start curr =
-    allowed && checkLoop candidates
+  allowed && checkLoop candidates
   where
     candidates = iterateMaybe (move labMap') start
     labMap' = labMap // [(pos curr, '#')]

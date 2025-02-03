@@ -62,7 +62,7 @@ testInput4 =
 -- Upper part/lower part translation
 -- input: | L 7 F J
 -- upper: | |     |
--- lower: |   | |  
+-- lower: |   | |
 -- (upper, lower)
 
 split :: Char -> (Char, Char)
@@ -114,7 +114,7 @@ clearPosition (Position {x, y, d, grid}) =
   Position {x, y, d, grid = clearGrid}
   where
     clearGrid =
-        map (\s -> replicate (length s) '.') grid
+      map (\s -> replicate (length s) '.') grid
 
 data Direction
   = North
@@ -175,7 +175,7 @@ startPositions position =
 task1 :: [String] -> IO ()
 task1 input = do
   let [(xPos, yPos)] = findChar 'S' input
-  let [startPos1,startPos2] = startPositions $ Position xPos yPos East input
+  let [startPos1, startPos2] = startPositions $ Position xPos yPos East input
   let paths = zip (iterate step startPos1) (iterate step startPos2)
   print $ (+ 1) . length . takeWhile not $ map (uncurry samePos . (fst &&& snd)) paths
 
@@ -194,9 +194,9 @@ cleanedGrid input = do
 
 countChar :: (Bool, Int) -> Char -> (Bool, Int)
 countChar (ins, cnt) c
-    | c == '|' = (not ins, cnt)
-    | ins && c == '.' = (ins, cnt + 1)
-    | otherwise = (ins, cnt)
+  | c == '|' = (not ins, cnt)
+  | ins && c == '.' = (ins, cnt + 1)
+  | otherwise = (ins, cnt)
 
 countRow :: [Char] -> Int
 countRow = snd . foldl countChar (False, 0)

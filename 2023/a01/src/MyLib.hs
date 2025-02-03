@@ -2,17 +2,15 @@ module MyLib (extract) where
 
 import Data.Char
 import Data.List
-
-import Data.Maybe ( mapMaybe, listToMaybe )
+import Data.Maybe (listToMaybe, mapMaybe)
 import GHC.Base ((<|>))
-
 
 extract :: String -> Maybe Int
 extract str = do
-    let digits = stringToDigits str
-    first <- listToMaybe digits
-    last <- listToMaybe . reverse $ digits
-    return $ 10 * first + last
+  let digits = stringToDigits str
+  first <- listToMaybe digits
+  last <- listToMaybe . reverse $ digits
+  return $ 10 * first + last
 
 stringToDigits str =
   mapMaybe digitAtHead $ takeWhile (not . null) $ iterate tail str

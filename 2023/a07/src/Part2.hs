@@ -1,7 +1,7 @@
 module Part2 (run) where
 
-import Data.List ( elemIndex, group, sort)
-import Data.List.Extra (sortOn, maximumOn, groupOn)
+import Data.List (elemIndex, group, sort)
+import Data.List.Extra (groupOn, maximumOn, sortOn)
 import Data.Maybe (fromJust)
 import Data.Ord (Down (Down))
 
@@ -26,7 +26,7 @@ highestCard :: String -> Char
 highestCard = highest . zipped . filterJ
 
 replaceJ :: String -> String -- replace j with the card that has the highest count.
-replaceJ hand = 
+replaceJ hand =
   map (\c -> if c == 'J' then high else c) hand
   where
     high = highestCard hand

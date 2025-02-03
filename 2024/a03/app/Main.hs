@@ -30,12 +30,12 @@ mulParser = do
 doParser :: MulState -> Parser MulState
 doParser mulState = do
   _ <- string "do()"
-  return mulState { enabled = True }
+  return mulState {enabled = True}
 
 dontParser :: MulState -> Parser MulState
 dontParser mulState = do
   _ <- string "don't()"
-  return mulState { enabled = False }
+  return mulState {enabled = False}
 
 mulStateParser :: MulState -> Parser MulState
 mulStateParser mulState = do
@@ -51,10 +51,10 @@ parsePart1 = getParserState >>= go 0
       case stateInput state of
         [] -> return prod
         _ ->
-          let (nextState, res) = runParser' mulParser state in
-          case res of
-            Right val -> go (val + prod) nextState
-            Left _ -> go prod (state {stateInput = tail (stateInput state)})
+          let (nextState, res) = runParser' mulParser state
+           in case res of
+                Right val -> go (val + prod) nextState
+                Left _ -> go prod (state {stateInput = tail (stateInput state)})
 
 parsePart2 :: Parser MulState
 parsePart2 = getParserState >>= go (MulState 0 True)

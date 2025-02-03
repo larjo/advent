@@ -1,9 +1,8 @@
 module Main where
 
-import Data.Functor ( (<&>) )
-
-import qualified Part1 (run)
-import qualified Part2 (run)
+import Data.Functor ((<&>))
+import Part1 qualified (run)
+import Part2 qualified (run)
 
 main :: IO ()
 main = do
