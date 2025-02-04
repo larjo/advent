@@ -1,36 +1,41 @@
 module Main where
 
-import Data.Array (Array, Ix (range), array, bounds, elems, listArray, assocs, (!), (//))
+import Data.Array (Array, assocs, bounds, listArray)
 import Data.Function (on)
-import Data.List (group, groupBy, nub)
+import Data.List (groupBy, nub, sortOn)
+import Data.VectorSpace ((^+^), (^-^))
 
 type Index = (Int, Int)
 
 type Element = (Index, Char)
 
-type CharArray = Array Index Char
+type Map = Array Index Char
 
-mkCharArray :: [String] -> CharArray
-mkCharArray l =
-  listArray ((0, 0), (maxRow, maxCol)) . concat $ l
+mkMap :: [String] -> Map
+mkMap l = listArray ((0, 0), (maxRow, maxCol)) . concat $ l
   where
     maxRow = length l - 1
     maxCol = length (head l) - 1
 
-extract :: [Element] -> [[Element]]
-extract = groupBy ((==) `on` snd) . filter ((/=) '.' . snd)
-
-pairs :: [Element] -> [(Index, Index)]
-pairs elements = [ (a, b) | a <- indicies, b <- indicies, a < b]
+inside :: Map -> Index -> Bool
+inside arr (x, y) = x >= xMin && x <= xMax && y >= yMin && y <= yMax
   where
-    indicies = map fst elements
+    ((xMin, yMin), (xMax, yMax)) = bounds arr
+
+extract :: [Element] -> [[Index]]
+extract = map (map fst) . groupBy ((==) `on` snd) . sortOn snd . filter ((/=) '.' . snd)
+
+pairs :: [Index] -> [(Index, Index)]
+pairs indicies = [(a, b) | a <- indicies, b <- indicies, a < b]
+
+antiNodes :: (Index, Index) -> [Index]
+antiNodes (a, b) = [a ^-^ diff, b ^+^ diff]
+  where
+    diff = b ^-^ a
 
 main :: IO ()
 main = do
-  input <- readFile "test-input.txt"
-  let arr = mkCharArray . lines $ input
-  let grps = extract . assocs $ arr
-  let grp1 = grps !! 0
-  mapM_ print $ pairs grp1 
+  arr <- mkMap . lines <$> readFile "input.txt"
+
   putStr "Part 1: "
-  mapM_ print grps
+  print . length . nub . concatMap (concatMap (filter (inside arr) . antiNodes) . pairs) . extract . assocs $ arr
