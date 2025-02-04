@@ -39,8 +39,7 @@ genNodes (a, b) = iterate (^+^ diff) b
     diff = b ^-^ a
 
 genBoth :: (Index -> Bool) -> (Index, Index) -> [Index]
-genBoth f (a, b) =
-  takeWhile f a2b ++ takeWhile f b2a
+genBoth f (a, b) = takeWhile f a2b ++ takeWhile f b2a
   where
     a2b = genNodes (a, b)
     b2a = genNodes (b, a)
