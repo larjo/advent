@@ -4,7 +4,6 @@ import Data.Array (Array, assocs, bounds, listArray)
 import Data.Function (on)
 import Data.List (groupBy, nub, sortOn)
 import Data.VectorSpace ((^+^), (^-^))
-import GHC.Arr (badSafeIndex)
 
 type Index = (Int, Int)
 
@@ -41,10 +40,10 @@ genNodes (a, b) = iterate (^+^ diff) b
 
 genBoth :: (Index -> Bool) -> (Index, Index) -> [Index]
 genBoth f (a, b) =
-  takeWhile f dir1 ++ takeWhile f dir2
+  takeWhile f a2b ++ takeWhile f b2a
   where
-    dir1 = genNodes (a, b)
-    dir2 = genNodes (b, a)
+    a2b = genNodes (a, b)
+    b2a = genNodes (b, a)
 
 main :: IO ()
 main = do
