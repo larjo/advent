@@ -1,34 +1,40 @@
 module Main where
 
-import Data.Char (digitToInt, intToDigit)
+import Data.Char (digitToInt)
 
 testDiskMap :: String
 testDiskMap = "2333133121414131402"
 
-testLayout :: String
-testLayout = "00...111...2...333.44.5555.6666.777.888899"
-
-testCompacted :: String
-testCompacted = "0099811188827773336446555566.............."
-
-expand :: String -> String
+expand :: String -> [Int]
 expand diskMap = go True (map digitToInt diskMap) (iterate (+ 1) 0)
   where
-    go True (b : bs) (i : is) = replicate b (intToDigit i) ++ go False bs is
-    go False (b : bs) is = replicate b '.' ++ go True bs is
-    go _ _ _ = ""
+    go True (b : bs) (i : is) = replicate b i ++ go False bs is
+    go False (b : bs) is = replicate b (-1) ++ go True bs is
+    go _ _ _ = []
 
-compact :: String -> String
-compact layout = ""
+compact :: [Int] -> [Int]
+compact layout = go (length layout) 1 (reverse layout) layout
+  where
+    go :: Int -> Int -> [Int] -> [Int] -> [Int]
+    go bi fi _ _ | bi < fi = []
+    go bi fi (b : bs) (f : fs) | f == -1 && b == -1 = go (bi - 1) (fi + 1) bs fs
+    go bi fi (b : bs) (f : fs) | f == -1 && b /= -1 = b : go (bi - 1) (fi + 1) bs fs
+    go bi fi (b : bs) (f : fs) | f /= -1 && b == -1 = f : go (bi - 1) (fi + 1) bs fs
+    go bi fi bs (f : fs) | f /= -1 = f : go bi (fi + 1) bs fs
+    go _ _ _ _ = []
 
-checkSum :: String -> Int
+checkSum :: [Int] -> Int
 checkSum layOut = sum $ zipWith (*) indicies blocks
   where
     indicies = iterate (+ 1) 0
-    blocks = map digitToInt . takeWhile (/= '.') $ layOut
+    blocks = layOut
 
 main :: IO ()
 main = do
   print testDiskMap
   print . expand $ testDiskMap
   print . checkSum . compact . expand $ testDiskMap
+
+  readFile "input.txt" >>= print . checkSum . compact . expand
+
+-- 6639544530862 to high
