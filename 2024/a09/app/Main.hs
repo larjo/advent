@@ -1,11 +1,8 @@
 module Main where
 
-import Data.Char
-import Test.HUnit
+import Data.Char (digitToInt)
 import Data.Function (on)
-
-testDiskMap :: String
-testDiskMap = "2333133121414131403"
+import Test.HUnit
 
 expand :: String -> [Int]
 expand diskMap = helper True (map digitToInt diskMap) (iterate (+ 1) 0)
@@ -14,21 +11,6 @@ expand diskMap = helper True (map digitToInt diskMap) (iterate (+ 1) 0)
     helper False (b : bs) is = replicate b (-1) ++ helper True bs is
     helper _ _ _ = []
 
--- go :: Int -> Int -> [Int] -> [Int] -> [Int]
--- go bi fi _ _ | bi < fi = []
--- go bi fi (b : bs) (f : fs) | f == -1 && b == -1 = go (bi - 1) (fi + 1) bs fs
--- go bi fi (b : bs) (f : fs) | f == -1 && b /= -1 = b : go (bi - 1) (fi + 1) bs fs
--- go bi fi (b : bs) (f : fs) | f /= -1 && b == -1 = f : go (bi - 1) (fi + 1) bs fs
--- go bi fi bs (f : fs)       | f /= -1 = f : go bi (fi + 1) bs fs
--- go _ _ _ _ = []
-
--- compact :: [Int] -> [Int]
--- compact layout = go (length layout) 1 (reverse layout) layout
--- 
-
--- f [8, -1, 2, 3, 4]
--- r [4,  3, 2,-1, 8]
---   [8, 4, 2, 3]
 compact :: [Int] -> [Int]
 compact l =
   go2 l (reverse l)
@@ -40,7 +22,7 @@ compact l =
     go2 _ _ = fail ""
 
 checkSum :: [Int] -> Int
-checkSum  = sum . zipWith (*) indicies 
+checkSum = sum . zipWith (*) indicies
   where
     indicies = iterate (+ 1) 0
 
@@ -73,32 +55,32 @@ compactTests =
       assertEqual
         "compact 9b"
         (canon "87733374465555666")
-        (compact $ canon "...333.44.5555.6666.777.8"), -- ok
+        (compact $ canon "...333.44.5555.6666.777.8"),
     TestCase $
       assertEqual
         "compact 9d"
         (canon "87733374465555666")
-        (compact $ canon "8..333.44.5555.6666.777."), -- ok  
+        (compact $ canon "8..333.44.5555.6666.777."),
     TestCase $
       assertEqual
         "compact 9c"
         (canon "87733374465555666")
-        (compact $ canon "87.333.44.5555.6666.77"), -- ok        
+        (compact $ canon "87.333.44.5555.6666.77"),
     TestCase $
       assertEqual
         "compact 10"
         (canon "00999111888287733374465555666")
-        (compact $ canon "0099911188828..333.44.5555.6666.777."), -- ok
+        (compact $ canon "0099911188828..333.44.5555.6666.777."),
     TestCase $
       assertEqual
         "compact 11"
         (canon "00999111888287733374465555666")
-        (compact $ canon "009991118882877333744.5555.6666"), -- 
+        (compact $ canon "009991118882877333744.5555.6666"),
     TestCase $
       assertEqual
         "compact 12"
         (canon "00999111888287733374465555666")
-        (compact $ canon "00999111888287733374465555666"), -- 
+        (compact $ canon "00999111888287733374465555666"),
     TestCase $
       assertEqual
         "compact 13"
@@ -114,10 +96,6 @@ runTest = do
 main :: IO ()
 main = do
   runTest
-  print testDiskMap
-  print . expand $ testDiskMap
-  print . checkSum . compact . expand $ testDiskMap
-
   readFile "input.txt" >>= print . checkSum . compact . expand
 
 -- 6639544530862 to high
