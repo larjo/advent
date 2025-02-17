@@ -1,7 +1,6 @@
 module Main where
 
 import Data.Char (digitToInt)
-import Data.Function (on)
 import Test.HUnit
 
 expand :: String -> [Int]
@@ -15,11 +14,11 @@ compact :: [Int] -> [Int]
 compact l =
   go2 l (reverse l)
   where
-    go2 (f : fs) (r : _) | f == -1 && r /= -1 = r : compact (init fs)
-    go2 fs (r : _) | r == -1 = compact $ init fs
-    go2 (f : fs) (r : _) | f /= -1 && r /= -1 = f : compact fs
+    go2 (f : fs) (r : rs) | f == -1 && r /= -1 = r : go2 (init fs) (init rs)
+    go2 fs (r : rs) | r == -1 = go2 (init fs) rs
+    go2 (f : fs) (r : _) | f /= -1 && r /= -1 = f : go2 fs (reverse fs)
     go2 [] [] = []
-    go2 _ _ = fail ""
+    go2 _ _ = fail "Should not happen"
 
 checkSum :: [Int] -> Int
 checkSum = sum . zipWith (*) indicies
@@ -28,9 +27,6 @@ checkSum = sum . zipWith (*) indicies
 
 canon :: String -> [Int]
 canon = map (\c -> if c == '.' then -1 else digitToInt c)
-
-compareBlocks :: String -> String -> Bool
-compareBlocks = (==) `on` canon
 
 checkSumTests :: [Test]
 checkSumTests =
@@ -98,4 +94,3 @@ main = do
   runTest
   readFile "input.txt" >>= print . checkSum . compact . expand
 
--- 6639544530862 to high
