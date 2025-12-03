@@ -16,8 +16,8 @@ turn pos (Turn 'R' dist) = (pos + dist) `mod` 100
 turn _ _ = error "invalid direction"
 
 turnCount :: (Int, Int) -> Turn -> (Int, Int)
-turnCount (pos, zeros) (Turn 'L' dist) = ((pos - dist) `mod` 100, zeros + abs ((pos - dist) `div` 100))
-turnCount (pos, zeros) (Turn 'R' dist) = ((pos + dist) `mod` 100, zeros + abs ((pos + dist) `div` 100))
+turnCount (pos, zeroCount) (Turn 'L' dist) = ((pos - dist) `mod` 100, zeroCount + abs ((pos - dist) `div` 100))
+turnCount (pos, zeroCount) (Turn 'R' dist) = ((pos + dist) `mod` 100, zeroCount + abs ((pos + dist) `div` 100))
 turnCount _ _ = error "invalid direction"
 
 turnParser :: Parser Turn
@@ -29,7 +29,10 @@ puzzleParser = turnParser `sepBy` newline
 main :: IO ()
 main = do
   input <- readFile "input.txt"
+  let turns = fromRight [] . parse puzzleParser "" $ input
+
   putStrLn "Part 1:"
-  print . length . filter (== 0) . scanl turn 50 . fromRight [] . parse puzzleParser "" $ input
+  print . length . filter (== 0) . scanl turn 50 $ turns
+
   putStrLn "Part 2:"
-  print . snd . foldl turnCount (50, 0) . fromRight [] . parse puzzleParser "" $ input
+  print . snd . foldl turnCount (50, 0) $ turns
