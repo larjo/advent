@@ -10,15 +10,23 @@ type Parser = Parsec Void String
 
 data Turn = Turn {direction :: Char, distance :: Int} deriving (Show)
 
+delta :: Char -> Int -> Int
+delta dir dist =
+  case dir of
+    'L' -> -dist
+    'R' -> dist
+    _ -> error "invalid direction"
+
 turn :: Int -> Turn -> Int
-turn pos (Turn 'L' dist) = (pos - dist) `mod` 100
-turn pos (Turn 'R' dist) = (pos + dist) `mod` 100
-turn _ _ = error "invalid direction"
+turn pos (Turn dir dist) = newPos `mod` 100
+  where
+    newPos = pos + delta dir dist
 
 turnCount :: (Int, Int) -> Turn -> (Int, Int)
-turnCount (pos, zeroCount) (Turn 'L' dist) = ((pos - dist) `mod` 100, zeroCount + abs ((pos - dist) `div` 100))
-turnCount (pos, zeroCount) (Turn 'R' dist) = ((pos + dist) `mod` 100, zeroCount + abs ((pos + dist) `div` 100))
-turnCount _ _ = error "invalid direction"
+turnCount (pos, zeroCount) (Turn dir dist) =
+  (newPos `mod` 100, zeroCount + abs (newPos `div` 100))
+  where
+    newPos = pos + delta dir dist
 
 turnParser :: Parser Turn
 turnParser = Turn <$> anySingle <*> decimal
