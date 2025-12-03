@@ -34,5 +34,4 @@ puzzleParser = turnParser `sepBy` newline
 main :: IO ()
 main = do
   input <- readFile "input.txt"
-  let turns = fromRight [] . parse puzzleParser "" $ input
-  print $ length . filter (== 0) . scanl turn 50 $ turns
+  print . length . filter (== 0) . scanl turn 50 . fromRight [] . parse puzzleParser "" $ input
